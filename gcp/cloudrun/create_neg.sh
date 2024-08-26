@@ -6,10 +6,21 @@ project="$2"
 region="$3"
 
 # Print usage instructions
-print_usage() {
-  echo "Your input: "$0" "$cr_name" "$project" "$region" is invalid, please check again"
+neg_usage() {
+  echo "Your input: \"$0\" \"$cr_name\" \"$project\" \"$region\" is invalid, please check again"
   echo "Usage: $0 <cloud_run_service_name> <project> <region>"
   echo "Example: $0 actualprices-api-dev-mp sinyi-cloud asia-east1"
+}
+
+# Check if the cloud run exists
+check_cr() {
+  local output=$(gcloud run services list --project="${project}" --region="${region}" --filter="metadata.name=${cr_name}" --format="value(metadata.name)")
+  if [ -n "$output" ]; then
+    echo "Cloud Run check passed. \"${cr_name}\" exists"
+    return 0  # Success
+  else
+    return 1  # Failure
+  fi
 }
 
 # Check if the network endpoint group exists
@@ -17,10 +28,10 @@ check_neg() {
   local output=$(gcloud compute network-endpoint-groups list --project="${project}" --regions="${region}" --filter="name=${cr_name}-endpoint" --format="value(name)")
 
   if [ -n "$output" ]; then
-    echo ""${cr_name}-endpoint" exists"
+    echo "\"${cr_name}-endpoint\" exists"
     return 0  # Success
   else
-    echo ""${cr_name}-endpoint" does not exist"
+    echo "\"${cr_name}-endpoint\" does not exist"
     return 1  # Failure
   fi
 }
@@ -37,7 +48,6 @@ create_neg() {
     echo "Successfully created ${cr_name}-endpoint"
     return 0  # Success
   else
-    echo "Failed to create ${cr_name}-endpoint"
     return 1  # Failure
   fi
 }
@@ -45,22 +55,23 @@ create_neg() {
 # Main function
 main() {
   # Check if the correct number of arguments is passed
-  if [[ -z $3 ]]; then
+  if [[ -z $cr_name || -z $project || -z $region ]]; then
     print_usage
     exit 1
   fi
 
-  if check_neg "${cr_name}"; then
-    echo "No need to create, ${cr_name}-endpoint already exists."
-  else
-    if create_neg "${cr_name}"; then
-      echo "${cr_name}-endpoint created successfully."
-    else
-      echo "Error: Failed to create ${cr_name}-endpoint."
-      exit 1
-    fi
-  fi
+  # Check if the Cloud Run service exists
+  check_cr || {
+    echo "Error: Cloud Run service \"${cr_name}\" does not exist."
+    exit 1
+  }
+
+  # Check if network endpoint group exists, if not, create it
+  check_neg || create_neg || {
+    echo "Error: Failed to create ${cr_name}-endpoint."
+    exit 1
+  }
 }
 
 # Execute main function with arguments
-main "$1" "$2" "$3"
+main "$@"
