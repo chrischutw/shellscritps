@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# Get the directory of the current script
+SCRIPT_DIR=$(dirname "$0")
+
 # Source Library
-source ../lib/cloudrun_functions.sh
+source "$SCRIPT_DIR/../lib/cloudrun_functions.sh"
 
 # Parameters
 cr_name="$1"
@@ -25,10 +28,10 @@ main() {
         exit 1
     fi
     # Check if region is valid, if not, exit
-    check_regions
+    check_regions "$region"
 
     # Check if the Cloud Run service exists, if not, exit
-    check_cr || exit 1
+    check_cloudrun "$cr_name" || exit 1
 
     # Check NEG, create if it doesn't exist
     check_neg || create_neg
@@ -39,10 +42,10 @@ main() {
     }
 
     # Check Load Balancer, if not, exit
-    check_lb || exit 1
+    check_load_balancer || exit 1
 
-    # Check if the domain exists in the Load Balancer, if not exists, add URL map
-    check_lb_domain || {
+    # Check if the host domain exists in the Load Balancer, if not exists, add URL map
+    check_load_balancer_host || {
         add_urlmap || exit 1
     }
 }
