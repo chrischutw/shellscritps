@@ -34,19 +34,19 @@ main() {
     check_cloudrun "$cr_name" || exit 1
 
     # Check NEG, create if it doesn't exist
-    check_neg || create_neg
+    check_neg "$cr_name" || create_neg "$cr_name"
 
     # Check backend, create if it doesn't exist
-    check_backend || {
-        create_backend && add_backend
+    check_backend "$cr_name" || {
+        create_backend "$cr_name" && add_backend "$cr_name"
     }
 
     # Check Load Balancer, if not, exit
-    check_load_balancer || exit 1
+    check_load_balancer "$load_balancer" || exit 1
 
     # Check if the host domain exists in the Load Balancer, if not exists, add URL map
-    check_load_balancer_host || {
-        add_urlmap || exit 1
+    check_lb_domain "$domain" || {
+        add_urlmap "$load_balancer" "$cr_name" "$domain" || exit 1
     }
 }
 
