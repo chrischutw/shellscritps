@@ -124,10 +124,10 @@ check_lb_domain() {
     )
 
     if echo "$host_rules" | grep -q "'hosts': \['${domain}'"; then
-        echo "Domain: \"${domain}\" exists."
+        echo "Domain: \"${domain}\" exists in \"${load_balancer}\"."
         return 0 # Exists
     else
-        echo "Domain: \"${domain}\" doesn't exist."
+        echo "Domain: \"${domain}\" doesn't exist in \"${load_balancer}\"."
         return 1 # Not Exists
     fi
 }
