@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Get the directory of the current script
-SCRIPT_DIR=$(dirname "$0")
+# Obtain incl.sh absolute path
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
-# Source Library
-source "$SCRIPT_DIR/../lib/cloudrun_functions.sh"
+# Sourcr all functions.sh through incl.sh
+source "$SCRIPT_DIR/../incl.sh"
 
 # Parameters
 cr_name="$1"
