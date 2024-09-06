@@ -53,7 +53,7 @@ check_neg() {
     )
 
     if [ -n "$output" ]; then
-        echo "Network Endpoint Group: \"${neg}\" exists."
+        echo "Network Endpoint Group: \"${neg}\" check passed."
         return 0 # Exists
     else
         echo "Network Endpoint Group: \"${neg}\" doesn't exists."
@@ -72,7 +72,7 @@ check_backend() {
             --format="value(name)"
     )
     if [ -n "$output" ]; then
-        echo "Backend: \"${backend}\" exists."
+        echo "Backend: \"${backend}\" check passed."
         return 0 # Exists
     else
         echo "Backend: \"${backend}\" doesn't exists."
@@ -105,10 +105,10 @@ check_load_balancer() {
     local output=$(gcloud compute url-maps list --project="${project}" --filter="name:${load_balancer}" --format="value(name)")
 
     if [ -n "$output" ]; then
-        echo "Load Balancer: \"${load_balancer}\" exists"
+        echo "Load Balancer: \"${load_balancer}\" check passed."
         return 0 # Exists
     else
-        echo "Load Balancer: \"${load_balancer}\" doesn't exists"
+        echo "Load Balancer: \"${load_balancer}\" doesn't exists."
         return 1 # Not Exists
     fi
 }
