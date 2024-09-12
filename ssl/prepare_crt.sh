@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Get the directory of the current script
-SCRIPT_DIR=$(dirname "$0")
+# Obtain incl.sh absolute path
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
-# Source the functions script from the lib directory relative to the script's directory
-source "$SCRIPT_DIR/certificate_functions.sh"
+# Sourcr all functions.sh through incl.sh
+source "${SCRIPT_DIR}/../../incl.sh"
 
 # Parameters
 source_path="$1"
