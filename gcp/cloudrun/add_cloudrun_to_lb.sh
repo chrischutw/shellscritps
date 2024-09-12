@@ -28,20 +28,20 @@ main() {
         exit 1
     fi
     # Check if region is valid, if not, exit
-    check_regions "$region"
+    check_regions "$region" || exit 1
 
     # Check if the Cloud Run service exists, if not, exit
     check_cloudrun "$cr_name" || exit 1
 
     # Check NEG, create if it doesn't exist
-    check_neg "$cr_name" || create_neg "$cr_name"
+    check_neg "$cr_name" || create_neg "$cr_name" || exit 1
 
     # Check Load Balancer, if not, exit
     check_load_balancer "$load_balancer" || exit 1
 
     # Check backend, create if it doesn't exist
     check_backend "$cr_name" || {
-        create_backend "$cr_name" && add_backend "$cr_name"
+        create_backend "$cr_name" && add_backend "$cr_name" || exit 1
     }
 
     # Check if the host domain exists in the Load Balancer, if not exists, add URL map
