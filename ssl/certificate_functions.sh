@@ -101,6 +101,6 @@ get_bundle_cert() {
     local common_name="$1"
     local end_date="$2"
 
-    cat "$source_path/twca_intermediate.crt" "$target_path/${common_name}-${end_date}.crt" > "$target_path/${common_name}-${end_date}-bundle.crt"
+    cat "$target_path/${common_name}-${end_date}.crt" "$source_path/twca_intermediate.crt" > "$target_path/${common_name}-${end_date}-bundle.crt"
     echo "Create \"${common_name}-${end_date}-bundle.crt\""
 }
