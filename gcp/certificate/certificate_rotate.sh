@@ -48,3 +48,5 @@ main() {
         process_load_balancer "${load_balancers[$i]}" "${certificates[$i]}" "${CERT_PATTERN}"
     done
 }
+
+main "$@"

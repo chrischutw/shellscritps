@@ -2,8 +2,9 @@
 
 # Check if the certificate and key exist
 check_certificate_and_key() {
-    local cert="$1"
-    local key="$2"
+    local source_path="$1"
+    local cert="$2"
+    local key="$3"
 
     if [ -f "$source_path/$cert" ] && [ -f "$source_path/$key" ]; then
         echo "Certificate and key found."
@@ -73,27 +74,27 @@ get_enddate() {
 # Get the certificate's common name
 get_common_name() {
     common_name=$(openssl x509 -in "$source_path/$certificate" -noout -subject | sed -n '/^subject/s/^.*CN = //p' | cut -d'/' -f1)
-    echo "$common_name"
+    echo "${common_name}"
 }
 
 get_converted_common_name() {
     common_name="$1"
     # Check if the common name starts with *.
-    if [[ "$common_name" == \*.* ]]; then
+    if [[ "${common_name}" == \*.* ]]; then
         # Replace * with wildcard and replace . with -
-        converted_common_name="wildcard-$(echo "$common_name" | sed 's/\*\.//' | tr '.' '-')"
+        converted_common_name="wildcard-$(echo "${common_name}" | sed 's/\*\.//' | tr '.' '-')"
     else
-        converted_common_name=$(echo "$common_name" | sed 's/\*\.//' | tr '.' '-')
+        converted_common_name=$(echo "${common_name}" | sed 's/\*\.//' | tr '.' '-')
     fi
-    echo "$converted_common_name"
+    echo "${converted_common_name}"
 }
 
 rename_cert_key() {
     local common_name="$1"
     local end_date="$2"
 
-    cp "$source_path/$certificate" "$target_path/${common_name}-${end_date}.crt"
-    cp "$source_path/$key" "$target_path/${common_name}-${end_date}.key"
+    cp "${source_path}/${certificate}" "${target_path}/${common_name}-${end_date}.crt"
+    cp "${source_path}/${key}" "${target_path}/${common_name}-${end_date}.key"
     echo "Certificate and key renamed to \"${common_name}-${end_date}.crt\" and \"${common_name}-${end_date}.key\""
 }
 
@@ -101,6 +102,6 @@ get_bundle_cert() {
     local common_name="$1"
     local end_date="$2"
 
-    cat "$target_path/${common_name}-${end_date}.crt" "$source_path/twca_intermediate.crt" > "$target_path/${common_name}-${end_date}-bundle.crt"
+    cat "${target_path}/${common_name}-${end_date}.crt" "${source_path}/twca_intermediate.crt" > "${target_path}/${common_name}-${end_date}-bundle.crt"
     echo "Create \"${common_name}-${end_date}-bundle.crt\""
 }
