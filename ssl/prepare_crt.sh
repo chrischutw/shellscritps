@@ -4,7 +4,7 @@
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 # Sourcr all functions.sh through incl.sh
-source "${SCRIPT_DIR}/../../incl.sh"
+source "${SCRIPT_DIR}/../incl.sh"
 
 # Input parameters for global wide
 SOURCE_PATH="$1"
