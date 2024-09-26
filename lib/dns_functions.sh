@@ -88,3 +88,45 @@ add_recordset() {
         return 1 # Failuare
     fi
 }
+
+update_recordset() {
+    local domain="$1"
+    local zone="$2"
+    local rrdata="$3"
+    local type"$4"
+    gcloud dns record-sets update "${domain}" \
+        --project="${project}" \
+        --rrdatas="${rrdata}" \
+        --type="${type}" \
+        --ttl=300 \
+        --zone="${zone}"
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully updated recordset: \"${rrdata}\" \"${type}\" \"${domain}\""
+        return 0 # Create Successfully
+    else
+        print_error "Failed to update recordset: \"${rrdata}\" \"${type}\" \"${domain}\""
+        return 1 # Failuare
+    fi
+}
+
+delete_recordset() {
+    local domain="$1"
+    local zone="$2"
+    local rrdata="$3"
+    local type"$4"
+    gcloud dns record-sets delete "${domain}" \
+        --project="${project}" \
+        --rrdatas="${rrdata}" \
+        --type="${type}" \
+        --ttl=300 \
+        --zone="${zone}"
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully deleted recordset: \"${rrdata}\" \"${type}\" \"${domain}\""
+        return 0 # Create Successfully
+    else
+        print_error "Failed to delete recordset: \"${rrdata}\" \"${type}\" \"${domain}\""
+        return 1 # Failuare
+    fi
+}
