@@ -21,7 +21,7 @@ check_regions() {
 
     for valid_region in "${valid_regions[@]}"; do
         if [[ "$region" == "$valid_region" ]]; then
-            echo "Region: \"${region}\" check passed."
+            echo "Region: \"${REGION}\" check passed."
             return 0 # Region is valid
         fi
     done
@@ -31,7 +31,7 @@ check_regions() {
 # Check if the cloud run exists
 check_cloudrun() {
     local cloudrun="$1"
-    local output=$(gcloud run services list --project="${project}" --region="${region}" --filter="metadata.name=${cloudrun}" --format="value(metadata.name)")
+    local output=$(gcloud run services list --project="${PROJECT}" --region="${REGION}" --filter="metadata.name=${cloudrun}" --format="value(metadata.name)")
     if [ -n "$output" ]; then
         echo "Cloud Run: \"${cloudrun}\" check passed."
         return 0 # Exists
@@ -46,8 +46,8 @@ check_neg() {
     local neg="$1"-endpoint
     local output=$(
         gcloud compute network-endpoint-groups list \
-            --project="${project}" \
-            $([[ "${region}" == "global" ]] && echo "--global" || echo "--regions=${region}") \
+            --project="${PROJECT}" \
+            $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--regions=${REGION}") \
             --filter="name=${neg}" \
             --format="value(name)"
     )
@@ -66,8 +66,8 @@ check_backend() {
     local backend="$1"-backend
     local output=$(
         gcloud compute backend-services list \
-            --project="${project}" \
-            $([[ "${region}" == "global" ]] && echo "--global" || echo "--regions=${region}") \
+            --project="${PROJECT}" \
+            $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--regions=${REGION}") \
             --filter="name=${backend}" \
             --format="value(name)"
     )
@@ -85,8 +85,8 @@ check_backend_used() {
     local backend="$1" #-backend
     local output=$(
         gcloud compute backend-services describe "${backend}" \
-            --project="${project}" \
-            $([[ "${region}" == "global" ]] && echo "--global" || echo "--region=${region}") |
+            --project="${PROJECT}" \
+            $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") |
             grep urlMaps
     )
     if [ -n "$output" ]; then
@@ -102,7 +102,7 @@ check_backend_used() {
 # Check if the load balancer exists
 check_load_balancer() {
     local load_balancer="$1"
-    local output=$(gcloud compute url-maps list --project="${project}" --filter="name:${load_balancer}" --format="value(name)")
+    local output=$(gcloud compute url-maps list --project="${PROJECT}" --filter="name:${load_balancer}" --format="value(name)")
 
     if [ -n "$output" ]; then
         echo "Load Balancer: \"${load_balancer}\" check passed."
@@ -116,10 +116,11 @@ check_load_balancer() {
 # Check if a domain exsits in a Load Balancer
 check_lb_domain() {
     local domain="$1"
+    local load_balancer="$2"
     local host_rules=$(
         gcloud compute url-maps describe "${load_balancer}" \
-            --project="${project}" \
-            $([[ "${region}" == "global" ]] && echo "--global" || echo "--region=${region}") \
+            --project="${PROJECT}" \
+            $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") \
             --format="value(hostRules)"
     )
 
@@ -137,8 +138,8 @@ create_neg() {
     local cloudrun="$1"
     local neg="$1"-endpoint
     gcloud compute network-endpoint-groups create "${neg}" \
-        --project="${project}" \
-        --region="${region}" \
+        --project="${PROJECT}" \
+        --region="${REGION}" \
         --network-endpoint-type=serverless \
         --cloud-run-service="${cloudrun}"
 
@@ -155,8 +156,8 @@ create_neg() {
 create_backend() {
     local backend="$1"-backend
     gcloud compute backend-services create "${backend}" \
-        --project="${project}" \
-        $([[ "${region}" == "global" ]] && echo "--global" || echo "--region=${region}") \
+        --project="${PROJECT}" \
+        $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") \
         --load-balancing-scheme=INTERNAL_MANAGED \
         --protocol=HTTPS \
         --enable-logging \
@@ -175,10 +176,10 @@ create_backend() {
 add_backend() {
     local backend="$1"-backend
     gcloud compute backend-services add-backend ${backend} \
-        --project="${project}" \
-        $([[ "${region}" == "global" ]] && echo "--global" || echo "--region=${region}") \
+        --project="${PROJECT}" \
+        $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") \
         --network-endpoint-group=${cr_name}-endpoint \
-        --network-endpoint-group-region="${region}"
+        --network-endpoint-group-region="${REGION}"
 
     if [ $? -eq 0 ]; then
         echo "Successfully added \"${cr_name}-endpoint\" to \"${backend}\""
@@ -195,8 +196,8 @@ add_urlmap() {
     local backend="$2"-backend
     local domain="$3"
     gcloud compute url-maps add-path-matcher "${load_balancer}" \
-        --project="${project}" \
-        $([[ "${region}" == "global" ]] && echo "--global" || echo "--region=${region}") \
+        --project="${PROJECT}" \
+        $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") \
         --path-matcher-name="${backend}" \
         --default-service="${backend}" \
         --new-hosts="${domain}"
@@ -213,9 +214,10 @@ add_urlmap() {
 remove_urlmap() {
     local load_balancer="$1"
     local backend="$2"-backend
+    local domain="$3"
     gcloud compute url-maps remove-path-matcher "${load_balancer}" \
-        --project="${project}" \
-        $([[ "${region}" == "global" ]] && echo "--global" || echo "--region=${region}") \
+        --project="${PROJECT}" \
+        $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") \
         --path-matcher-name="${backend}"
 
     if [ $? -eq 0 ]; then
@@ -228,10 +230,10 @@ remove_urlmap() {
 }
 
 delete_backend() {
-    local backend="$1" #-backend
+    local backend="$1"-backend
     gcloud compute backend-services delete ${backend} \
-        --project="${project}" \
-        $([[ "${region}" == "global" ]] && echo "--global" || echo "--region=${region}") \
+        --project="${PROJECT}" \
+        $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") \
         --quiet
 
     if [ $? -eq 0 ]; then
@@ -240,5 +242,38 @@ delete_backend() {
     else
         print_error "Failed to delete \"${backend}\""
         return 1 # Failuare
+    fi
+}
+
+delete_neg() {
+    local cloudrun="$1"
+    local neg="$1"-endpoint
+    gcloud compute network-endpoint-groups delete "${neg}" \
+        --project="${PROJECT}" \
+        --region="${REGION}" \
+        --quiet
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully delete Network Endpoint Group: \"${neg}\"."
+        return 0 # Create Successfully
+    else
+        print_error "Fail to delete Network Endpoint Group: \"${neg}\"."
+        return 1 # Failuare
+    fi
+
+}
+delete_cloudrun() {
+    local cloudrun="$1"
+    gcloud run services delete "${cloudrun}" \
+        --project="${PROJECT}" \
+        --region="${REGION}" \
+        --quiet
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully delete Cloud Run: \"${cloudrun}\"."
+        return 0 # Exists
+    else
+        echo "Fail to delete Cloud Run: \"${cloudrun}\"."
+        return 1 # Not Exists
     fi
 }
