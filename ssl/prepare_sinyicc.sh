@@ -32,9 +32,6 @@ main() {
     # Input Validation: Check if the ceritificate and key exsits.
     check_certificate_and_key "${SOURCE_PATH}" "${CERT}" "${KEY}" || exit 1
 
-    # Verify the certificate and intermediate certificate
-    check_certificate_and_intermediate "${SOURCE_PATH}" "${CERT}" || exit 1
-
     # Verify the certificate and key checksum
     check_certificate_and_key_match "${SOURCE_PATH}" "${CERT}" "${KEY}" || exit 1
 
@@ -51,7 +48,8 @@ main() {
     # Rename certificate and key
     rename_cert_key "${SOURCE_PATH}" "${TARGET_PATH}" "${CERT}" "${KEY}" "${converted_common_name}" "${end_date}"
 
-    get_bundle_cert "${SOURCE_PATH}" "${TARGET_PATH}" "${converted_common_name}" "${end_date}"
+    # Rename sinyi.cc.crt to sinyi.cc-bundle.crt
+    mv "${TARGET_PATH}"/"${converted_common_name}"-"${end_date}".crt "${TARGET_PATH}"/"${converted_common_name}"-"${end_date}"-bundle.crt 
 }
 
 main "$@"

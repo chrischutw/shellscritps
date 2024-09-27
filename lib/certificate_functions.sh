@@ -33,7 +33,8 @@ is_fqdn() {
 }
 
 check_certificate_and_intermediate() {
-    local cert="$1"
+    local source_path="$1"
+    local cert="$2"
     openssl verify -untrusted "$source_path/$cert" "$source_path/twca_intermediate.crt" > /dev/null 2>&1
 
     if [ $? -eq 0 ]; then
@@ -46,8 +47,9 @@ check_certificate_and_intermediate() {
 }
 
 check_certificate_and_key_match() {
-    local cert="$1"
-    local key="$2"
+    local source_path="$1"
+    local cert="$2"
+    local key="$3"
 
     # Extract the Modulus from the certificate
     local cert_modulus=$(openssl x509 -noout -modulus -in "$source_path/$cert" | openssl md5)
@@ -67,13 +69,17 @@ check_certificate_and_key_match() {
 
 # Get the certificate's end date
 get_enddate() {
-    end_date=$(openssl x509 -in "$source_path/$certificate" -enddate -noout | cut -d= -f2 | xargs -I{} date -d {} +%Y%m%d)
+    local source_path="$1"
+    local cert="$2"
+    end_date=$(openssl x509 -in "$source_path/$cert" -enddate -noout | cut -d= -f2 | xargs -I{} date -d {} +%Y%m%d)
     echo "$end_date"
 }
 
 # Get the certificate's common name
 get_common_name() {
-    common_name=$(openssl x509 -in "$source_path/$certificate" -noout -subject | sed -n '/^subject/s/^.*CN = //p' | cut -d'/' -f1)
+    local source_path="$1"
+    local cert="$2"
+    common_name=$(openssl x509 -in "$source_path/$cert" -noout -subject | sed -n '/^subject/s/^.*CN = //p' | cut -d'/' -f1)
     echo "${common_name}"
 }
 
@@ -90,18 +96,25 @@ get_converted_common_name() {
 }
 
 rename_cert_key() {
-    local common_name="$1"
-    local end_date="$2"
+    local source_path="$1"
+    local target_path="$2"
+    local cert="$3"
+    local key="$4"
+    local common_name="$5"
+    local end_date="$6"
 
-    cp "${source_path}/${certificate}" "${target_path}/${common_name}-${end_date}.crt"
+    cp "${source_path}/${cert}" "${target_path}/${common_name}-${end_date}.crt"
     cp "${source_path}/${key}" "${target_path}/${common_name}-${end_date}.key"
     echo "Certificate and key renamed to \"${common_name}-${end_date}.crt\" and \"${common_name}-${end_date}.key\""
 }
 
 get_bundle_cert() {
-    local common_name="$1"
-    local end_date="$2"
+    local source_path="$1"
+    local target_path="$2"
+    local common_name="$3"
+    local end_date="$4"
 
     cat "${target_path}/${common_name}-${end_date}.crt" "${source_path}/twca_intermediate.crt" > "${target_path}/${common_name}-${end_date}-bundle.crt"
     echo "Create \"${common_name}-${end_date}-bundle.crt\""
 }
+

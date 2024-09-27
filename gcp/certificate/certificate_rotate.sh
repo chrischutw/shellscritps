@@ -19,12 +19,12 @@ CERT_PATTERN="${CERT%-????????}"
 
 # Print usage instructions
 print_usage() {
-    echo "Your input: \"$0\" \"${source_path}\" \"${certificate}\" \"${project}\" \"${region}\" is invalid, please check again"
+    echo "Your input: \"$0\" \"${SOURCE_PATH}\" \"${CERT}\" \"${PROJECT}\" \"${REGION}\" is invalid, please check again"
     echo "Usage: $0 <source_path> <certificate> <project> <region>"
 }
 
 main() {
-    if [[ -z "${source_path}" || -z "${certificate}" || -z "${project}" || -z "${region}" ]]; then
+    if [[ -z "${SOURCE_PATH}" || -z "${CERT}" || -z "${PROJECT}" || -z "${REGION}" ]]; then
         print_usage
         exit 1
     fi
@@ -34,6 +34,9 @@ main() {
 
     # Input validation - Check if the region is valid, if not, exit
     check_regions "${REGION}" || exit 1
+
+    # Check if the region is global or regional
+    is_region_global
 
     # Check certificate, create if it doesn't exist
     check_ssl || {
