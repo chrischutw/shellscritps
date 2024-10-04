@@ -18,7 +18,7 @@ is_region_global() {
 }
 
 check_ssl() {
-    output=$(gcloud compute ssl-certificates list --filter="name="${CERT_NAME}"" --format="value(name)")
+    output=$(gcloud compute ssl-certificates list --project="${PROJECT}" --filter="name="${CERT_NAME}"" --format="value(name)")
     if [ -n "$output" ]; then
         echo "Certificate: \"${CERT_NAME}\" exists."
         return 0 # Exists
@@ -69,7 +69,8 @@ is_certificate_this_year() {
     local certificate="$1"
     local current_year=$(date +"%Y")
     # Extract the year from the certificate (last 8 digits) and compare with the current year
-    local cert_year="${certificate: -8:4}"
+    local cert_year=$(echo "${certificate}" | sed -E 's/.*-([0-9]{4}).*/\1/')
+
 
     # Return true if the certificate year matches the current year
     [[ "${cert_year}" == "${current_year}" ]]
@@ -94,7 +95,7 @@ process_load_balancer() {
     # Step 3: Check if the matching certificate is from this year
     if is_certificate_this_year "$matching_certificate"; then
         # Step 4: Replace the old certificate with the new one
-        local updated_certificates=$(replace_certificate "${certificates}" "${matching_certificate}" "${CERT}")
+        local updated_certificates=$(replace_certificate "${certificates}" "${matching_certificate}" "${CERT_NAME}")
         update_certificate "${load_balancer}" "${updated_certificates}"
         echo "Updated Certificates for \"${load_balancer}\": \"${updated_certificates}\""
     else
@@ -110,4 +111,11 @@ update_certificate() {
         --project="${PROJECT}" \
         "${REION_FLAG}" \
         --ssl-certificates="${certificates}"
+}
+
+delete_ssl() {
+    gcloud compute ssl-certificates delete "${CERT_NAME}" \
+        --project="${PROJECT}" \
+        "${REION_FLAG}" \
+        --quiet
 }

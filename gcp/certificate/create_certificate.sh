@@ -19,7 +19,7 @@ CERT_PATTERN="${CERT%-????????}"
 
 # Print usage instructions
 print_usage() {
-    echo "Your input: \"$0\" \"${source_path}\" \"${certificate}\" \"${project}\" \"${region}\" is invalid, please check again"
+    echo "Your input: \"$0\" \"${SOURCE_PATH}\" \"${CERT}\" \"${PROJECT}\" \"${REGION}\" is invalid, please check again"
     echo "Usage: $0 <source_path> <certificate> <project> <region>"
 }
 

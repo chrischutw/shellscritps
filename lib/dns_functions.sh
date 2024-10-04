@@ -113,13 +113,10 @@ update_recordset() {
 delete_recordset() {
     local domain="$1"
     local zone="$2"
-    local rrdata="$3"
-    local type"$4"
+    local type"$3"
     gcloud dns record-sets delete "${domain}" \
         --project="${project}" \
-        --rrdatas="${rrdata}" \
         --type="${type}" \
-        --ttl=300 \
         --zone="${zone}"
 
     if [ $? -eq 0 ]; then

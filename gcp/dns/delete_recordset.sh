@@ -37,7 +37,7 @@ main() {
     check_zone ${zone} || exit 1
 
     # Input validation - Check if the rrdata exists, if not, create it
-    check_recordset "${domain}" "${zone}" && delete_recordset "${domain}" "${zone}" "${rrdata}" "${type}" || exit 1
+    check_recordset "${domain}" "${zone}" && delete_recordset "${domain}" "${zone}" "${type}" || exit 1
 
 
 }

@@ -48,7 +48,7 @@ main() {
 
     # Iterate over the load_balancers and certificates arrays
     for i in "${!load_balancers[@]}"; do
-        process_load_balancer "${load_balancers[$i]}" "${certificates[$i]}" "${CERT_PATTERN}"
+        process_load_balancer "${load_balancers[$i]}" "${certificates[$i]}"
     done
 }
 

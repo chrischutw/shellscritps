@@ -178,14 +178,14 @@ add_backend() {
     gcloud compute backend-services add-backend ${backend} \
         --project="${PROJECT}" \
         $([[ "${REGION}" == "global" ]] && echo "--global" || echo "--region=${REGION}") \
-        --network-endpoint-group=${cr_name}-endpoint \
+        --network-endpoint-group=${CR_NAME}-endpoint \
         --network-endpoint-group-region="${REGION}"
 
     if [ $? -eq 0 ]; then
-        echo "Successfully added \"${cr_name}-endpoint\" to \"${backend}\""
+        echo "Successfully added \"${CR_NAME}-endpoint\" to \"${backend}\""
         return 0 # Create Successfully
     else
-        print_error "Failed to add \"${cr_name}-endpoint\" to \"${backend}\""
+        print_error "Failed to add \"${CR_NAME}-endpoint\" to \"${backend}\""
         return 1 # Failuare
     fi
 }
